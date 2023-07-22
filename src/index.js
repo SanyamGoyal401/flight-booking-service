@@ -1,5 +1,5 @@
 const express = require('express')
-const{ServerConfig, Logger} = require('./config');
+const{ServerConfig, Logger, Queue} = require('./config');
 const apiRoutes = require('./routes')
 const app = express();
 
@@ -16,8 +16,9 @@ app.get('/', (req, res)=>{
 app.use('/api', apiRoutes);
 
 
-app.listen(ServerConfig.PORT, ()=>{
+app.listen(ServerConfig.PORT, async()=>{
     console.log(`Successfully started the port at ${ServerConfig.PORT}`);
     Logger.info('Successfully started server', {})
     Cron();
+    await Queue.connectQueue();
 })

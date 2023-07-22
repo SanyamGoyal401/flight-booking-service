@@ -1,6 +1,6 @@
 const {StatusCodes} = require('http-status-codes');
 
-const {Booking, sequelize} = require('../models');
+const {Booking} = require('../models');
 const CrudRepository = require('./crud-repository');
 const { Op } = require('sequelize');
 const { Enums } = require('../utils/common');

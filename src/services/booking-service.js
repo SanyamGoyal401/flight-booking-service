@@ -2,12 +2,12 @@ const axios = require('axios')
 
 const { BookingRepository } = require('../repositories')
 const db = require('../models');
-const { ServerConfig } = require('../config');
+const { ServerConfig, Queue } = require('../config');
 const serverConfig = require('../config/server-config');
 const AppError = require('../utils/errors/app-error');
 const { StatusCodes } = require('http-status-codes');
 const { Enums } = require('../utils/common');
-const { BOOKED, CANCELLED, INITIATED, PENDING } = Enums.BOOKING_STATUS;
+const { BOOKED, CANCELLED} = Enums.BOOKING_STATUS;
 
 
 const bookingRepository = new BookingRepository();
@@ -43,7 +43,7 @@ async function makePayment(data) {
             const bookingTime = new Date(bookingDetails.createdAt);
             const currentTime = new Date();
             if (bookingDetails.status == CANCELLED) {
-                throw new AppError('Booking Expired', StatusCodes.BAD_REQUEST);
+                throw new AppError('This booking has been cancelled', StatusCodes.BAD_REQUEST);
             }
             if (currentTime - bookingTime > 300000) {
                 await cancelBooking(bookingDetails.id);
@@ -59,6 +59,11 @@ async function makePayment(data) {
 
             //assuming payment is successful
             const response = await bookingRepository.update(data.bookingId, { status: BOOKED });
+            Queue.sendData({
+                recepientEmail: 'sanyamgoyal2859@gmail.com',
+                subject: 'Flight Booked',
+                body: `Booking successfully done for the Flight.\nDetails are: ${JSON.stringify(bookingDetails)}`
+            })
             return response;
         })
         return result;
@@ -100,7 +105,7 @@ async function cancelOldBookings(){
         return response;
     }
     catch(error){
-
+        console.log(error);
     }
 }
 
