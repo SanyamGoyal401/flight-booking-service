@@ -14,10 +14,6 @@ module.exports = (sequelize, DataTypes) => {
     }
   }
   SeatBooking.init({
-    userId:{
-      type: DataTypes.INTEGER,
-      allowNull: false
-    },
     flightId: {
       type: DataTypes.INTEGER,
       allowNull: false
