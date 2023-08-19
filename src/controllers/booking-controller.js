@@ -10,6 +10,7 @@ async function createBooking(req, res) {
             flightId: req.body.flightId,
             userId: req.body.userId,
             noOfSeats: req.body.noOfSeats,
+            seats: req.body.seats
         });
         SuccessResponse.data = response;
         return res.status(StatusCodes.OK)

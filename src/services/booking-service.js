@@ -7,6 +7,7 @@ const serverConfig = require('../config/server-config');
 const AppError = require('../utils/errors/app-error');
 const { StatusCodes } = require('http-status-codes');
 const { Enums } = require('../utils/common');
+const {createSeatBooking}  = require('./seat-booking-service');
 const { BOOKED, CANCELLED} = Enums.BOOKING_STATUS;
 
 
@@ -23,14 +24,20 @@ async function createBooking(data) {
             const totalBillingAmount = data.noOfSeats * flightData.price;
 
             const bookingPayLoad = { ...data, totalCost: totalBillingAmount };
-
+            
             const booking = await bookingRepository.create(bookingPayLoad);
-
+            
+            await createSeatBooking({
+                flightId : data.flightId,
+                seats : data.seats,
+                bookingId : booking.id,
+            });
             await axios.patch(`${ServerConfig.FLIGHT_SERVICE}/api/v1/flights/${data.flightId}/seats`, { seats: data.noOfSeats });
             return booking;
         })
         return result;
     } catch (error) {
+        if(error instanceof AppError)throw error;
         throw new AppError(error.message, StatusCodes.INTERNAL_SERVER_ERROR);
     }
 }
@@ -68,8 +75,8 @@ async function makePayment(data) {
         })
         return result;
     } catch (error) {
-        throw new AppError(error.message, error.statusCode);
-    }
+        if(error instanceof AppError)throw error;
+        throw new AppError(error.message, StatusCodes.INTERNAL_SERVER_ERROR);    }
 }
 
 
@@ -92,8 +99,8 @@ async function cancelBooking(bookingId) {
         })
         return result;
     } catch (error) {
-        console.log(error);
-        throw new AppError(error.message, error.statusCode);
+        if(error instanceof AppError)throw error;
+        throw new AppError(error.message, StatusCodes.INTERNAL_SERVER_ERROR);
     }
 }
 

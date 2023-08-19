@@ -24,7 +24,11 @@ async function createSeatBooking(data) {
         })
         return result;
     } catch (error) {
-        throw new AppError(error.message, StatusCodes.BAD_REQUEST);
+        console.log(error);
+        if(error.name === 'SequelizeUniqueConstraintError'){
+            throw new AppError("The seat you selected has already been selected by another person", StatusCodes.CONFLICT);
+        }
+        throw new AppError(error.message, StatusCodes.INTERNAL_SERVER_ERROR);
     }
 }
 
